@@ -1,0 +1,139 @@
+#!/usr/bin/python
+__version__ = "$Revision$ $Date$"
+__license__ = """
+    Copyright (C) 2006, 2007, 2008  Proformatique
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA..
+"""
+
+CONFIG_CONTEXT_TEMPLATE = "/etc/asterisk/xivo_context.conf"
+
+import sys
+from xivo import OrderedConf
+from xivo import xivo_helpers
+
+cursor = xivo_helpers.db_connect().cursor()
+
+cursor.query("SELECT ${columns} FROM voicemenu "
+             "WHERE commented = 0 "
+             "ORDER BY name DESC",
+             ('name',))
+res = cursor.fetchall()
+
+for (context,) in res:
+        print "[voicemenu-" + context + "]"
+        print "switch = Realtime/voicemenu-%s@extensions" % context
+
+
+cursor.query("SELECT ${columns} FROM context "
+	     "WHERE commented = 0 "
+	     "ORDER BY name DESC",
+	     ('name',))
+res = cursor.fetchall()
+
+if not res:
+	# No context time to exit
+	sys.exit()
+
+# /!\ Do not change the path before asking everybody in the office /!\
+config = OrderedConf.OrderedRawConf(filename=CONFIG_CONTEXT_TEMPLATE)
+
+if config.has_conflicting_section_names():
+	raise ValueError, CONFIG_CONTEXT_TEMPLATE + " has conflicting section names"
+
+if not config.has_section('template'):
+	raise ValueError, "Template section doesn't exist"
+
+for (context,) in res:
+	print "[" + context + "]"
+
+	# Maybe a relation exists between hints and realtime TODO check
+	cursor.query("SELECT ${columns} FROM userfeatures "
+		     "WHERE context = %s "
+		     "AND IFNULL(number,'') != '' "
+		     "AND internal = 0 "
+		     "AND enablehint = 1",
+		     ('number', 'protocol', 'name'),
+		     (context,))
+        res2 = cursor.fetchall()
+
+        for e in res2:
+                if e[0] and e[1] and e[2]:
+
+			e[1] = e[1].upper()
+			if e[1] == "IAX":
+				e[1] = "IAX2";
+
+                        print "exten = " + str(e[0]) + ",hint," + str(e[1]) + "/" + str(e[2])
+
+	cursor.query("SELECT ${columns} FROM userfeatures "
+		     "INNER JOIN phonefunckey "
+		     "ON userfeatures.context = %s "
+		     "AND userfeatures.id = phonefunckey.iduserfeatures "
+		     "AND phonefunckey.typeextenumbers IS NULL "
+		     "AND phonefunckey.typevalextenumbers IS NULL "
+		     "AND phonefunckey.typeextenumbersright IN ('user', 'group', 'queue', 'meetme') "
+		     "AND phonefunckey.supervision = 1 "
+		     "LEFT OUTER JOIN extenumbers "
+		     "ON phonefunckey.typeextenumbersright = extenumbers.type "
+		     "AND phonefunckey.typevalextenumbersright = extenumbers.typeval "
+		     "WHERE IFNULL(userfeatures.number,'') != ''",
+		     ('extenumbers.exten', 'extenumbers.type'),
+		     (context,))
+	res2 = cursor.fetchall()
+
+	by_type = {}
+	for row in res2:
+		xtype = row['extenumbers.type']
+		exten = xivo_helpers.speed_dial_key_extension(None, row['extenumbers.exten'], None)
+		the_set = by_type.setdefault(xtype, set())
+		the_set.add(exten)
+
+	for xtype, exten_set in by_type.iteritems():
+		for exten in exten_set:
+			print "exten = %s,hint,%s:%s" % (exten, xtype, exten)
+
+	# Ewww. The following query is a closure of one in provisioning/autoprov
+	cursor.query("SELECT ${columns} FROM userfeatures INNER JOIN phonefunckey "
+		     "ON userfeatures.context = %s "
+		     "AND userfeatures.id = phonefunckey.iduserfeatures "
+		     "AND phonefunckey.typeextenumbers = 'extenfeatures' "
+		     "AND phonefunckey.typevalextenumbers = 'bsfilter' "
+		     "AND phonefunckey.typeextenumbersright = 'user' "
+		     "AND phonefunckey.supervision = 1 "
+		     "LEFT OUTER JOIN extenumbers AS extenumleft "
+		     "ON extenumleft.type = 'extenfeatures' "
+		     "AND extenumleft.typeval = 'bsfilter' "
+		     "LEFT OUTER JOIN extenumbers AS extenumright "
+		     "ON phonefunckey.typeextenumbersright = extenumright.type "
+		     "AND phonefunckey.typevalextenumbersright = extenumright.typeval "
+		     "WHERE IFNULL(userfeatures.number,'') != ''",
+		     ('extenumleft.exten', 'phonefunckey.exten', 'extenumright.exten', 'userfeatures.number'),
+		     (context,))
+	res2 = cursor.fetchall()
+	extens = set(xivo_helpers.speed_dial_key_extension(row['extenumleft.exten'], row['extenumright.exten'],
+							   row['phonefunckey.exten'], row['userfeatures.number'], True)
+		     for row in res2)
+
+	for exten in extens:
+		print "exten = " + exten + ",hint,Custom:" + exten
+
+	if config.has_section(context):
+		section_name = context
+	else:
+		section_name = 'template'
+
+	for option in config.iter_options(section_name):
+		print option.get_name() + ' = ' + option.get_value().replace('%%CONTEXT%%',context)
