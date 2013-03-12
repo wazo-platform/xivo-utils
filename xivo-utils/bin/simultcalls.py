@@ -83,7 +83,7 @@ for opt, arg in opts[0]:
         sc_begin = arg
     elif opt in ['-e', '--end']:
         sc_end = arg
-        
+
     elif opt in ['-i', '--image']:
         sc_image = True
     elif opt in ['-p', '--ps']:
@@ -94,7 +94,7 @@ for opt, arg in opts[0]:
         sc_keep = True
     elif opt in ['-h', '--help']:
         sc_help = True
-        
+
 if opts[1]:
     infile_or_ip = opts[1][0]
 
@@ -156,7 +156,7 @@ if sc_mode == 'ip':
         print ' - did you give some meaningful begin and end dates ? (%s -> %s)' % (sc_begin, sc_end)
         print ' - are you on a sufficiently high XiVO version (1.0 or greater) ?'
         sys.exit(1)
-        
+
 elif sc_mode == 'file':
     # file/url mode
     if infile_or_ip.startswith('http:'):
@@ -229,7 +229,7 @@ for h in hsk:
         histo_minutes[time_min] = histo_minutes[time_min] + h0 / 60.0
     else:
         histo_minutes[time_min] = h0 / 60.0
-        
+
     if h0 == max_s_value:
         for hbin in [h-1, h, h+1]:
             if hbin not in max_s_list:
@@ -237,7 +237,7 @@ for h in hsk:
     if h0 > max_s_value:
         max_s_value = h0
         max_s_list = [h-1, h, h+1]
-        
+
     zero_minutes(time_min - 1)
     zero_minutes(time_min + 1)
     strtime = time.strftime('%d/%m/%Y,%H:%M:%S', time.localtime(ttime))
@@ -273,16 +273,16 @@ if sc_ps or sc_x11 or sc_image:
     g('set title "%s"' % title)
     g('set xdata time')
     g('set timefmt "%d/%m/%Y,%H:%M:%S"')
-    
+
     g('set terminal postscript color solid')
     pstmpplot = '/tmp/simultcalls_%s.ps' % now
     g('set output "%s"' % pstmpplot)
-    
+
     g('plot '
       '"%s" using 1:2 with lines title "Nombre d\'Appels (s)" 1,'
       '"%s" using 1:2 with lines title "Nombre d\'Appels (min)" 3'
       % (datfilename_s, datfilename_m))
-    
+
     if sc_ps:
         g('set terminal postscript color solid')
         g('set output "simultcalls_%s.ps"' % now)
