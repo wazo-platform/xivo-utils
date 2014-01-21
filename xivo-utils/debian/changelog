@@ -1,0 +1,47 @@
+xivo-utils (13.05~20130312.124101.6eedb0e-2) squeeze-xivo-skaro-dev; urgency=low
+
+  * add dependency to xivo-lib-python
+
+ -- Gregory Eric Sanderson <gsanderson@avencall.com>  Tue, 12 Mar 2013 15:29:34 -0500
+
+xivo-utils (13.04~20130205.210209.241fc8f-1) squeeze-xivo-skaro-dev; urgency=low
+
+  * rename package 
+
+ -- Nicolas HICHER <nhicher@avencall.com>  Tue, 12 Mar 2013 08:50:04 -0400
+
+pf-xivo-utils (13.04~20130205.210209.241fc8f-2) squeeze-xivo-skaro-dev; urgency=low
+
+  * replace depends on gs with ghostscript-x
+
+ -- Nicolas HICHER <nhicher@avencall.com>  Tue, 05 Mar 2013 15:02:55 -0500
+
+pf-xivo-utils (1.2~alpha-1.4-1) squeeze-xivo-skaro-dev; urgency=low
+
+  * Fix version for packaging-farm
+
+ -- Nicolas HICHER (atarakt) <nhicher@proformatique.com>  Wed, 28 Sep 2011 15:20:24 -0400
+
+pf-xivo-utils (0.4~svn5637-0) etch-xivo-k-9-dev; urgency=low
+
+  * Added new monitoring scripts in '/usr/sbin'.
+
+ -- Marc Dequènes (Duck) <mdequenes@proformatique.com>  Mon, 16 Mar 2009 15:37:13 +0100
+
+pf-xivo-utils (0.4~svn4374-0) etch-xivo-k-9-dev; urgency=low
+
+  * Added asterisk scripts from obsolete 'pf-xivo-base-agi'.
+
+ -- Marc Dequènes (Duck) <mdequenes@proformatique.com>  Fri, 17 Oct 2008 18:28:39 +0200
+
+pf-xivo-utils (0.4~svn2919-4) etch-xivo-k-9-dev; urgency=low
+
+  * Replaced all occurrences to Xivo by XIVO in copyright file.
+
+ -- Adrien DELLE CAVE (Decryptus) <decryptus@proformatique.com>  Wed, 23 Jul 2008 00:42:28 +0200
+
+pf-xivo-utils (0.3~svn2187-0) etch-xivo-tardis; urgency=low
+
+  * Initial development snapshot.
+
+ -- Marc Dequènes (Duck) <mdequenes@proformatique.com>  Thu, 13 Dec 2007 15:21:41 +0100
