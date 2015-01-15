@@ -16,7 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import sys
-from xivo import xivo_helpers
+
+from xivo_dao.data_handler.voicemail import services as voicemail_services
+from xivo_dao.data_handler.user_voicemail import services as user_voicemail_services
+from xivo_dao.data_handler.user_voicemail.model import UserVoicemail
 
 if len(sys.argv) != 4:
     raise ValueError("Missing args!")
@@ -25,10 +28,18 @@ context = sys.argv[1]
 mailbox = sys.argv[2]
 new_password = sys.argv[3]
 
-cursor = xivo_helpers.db_connect().cursor()
-cursor.query("UPDATE voicemail "
-             "SET password = %s "
-             "WHERE context = %s "
-             "AND mailbox = %s",
-             parameters=(new_password, context, mailbox))
-xivo_helpers.db_close()
+# Currently, we need to unlink the voicemail from the user before editing it.
+voicemail = voicemail_services.get_by_number_context(mailbox, context)
+old_user_voicemail = user_voicemail_services.find_by_voicemail_id(voicemail.id)
+user_voicemail_services.dissociate(old_user_voicemail)
+
+voicemail = voicemail_services.get_by_number_context(mailbox, context)
+voicemail.password = new_password
+voicemail_services.edit(voicemail)
+
+# Relink the user to the voicemail
+new_user_voicemail = UserVoicemail(user_id=old_user_voicemail.user_id,
+                                   voicemail_id=old_user_voicemail.voicemail_id,
+                                   enabled=old_user_voicemail.enabled)
+
+user_voicemail_services.associate(new_user_voicemail)
