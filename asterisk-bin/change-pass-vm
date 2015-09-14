@@ -48,9 +48,9 @@ def get_voicemail(mailbox, context):
 
 def get_user_for_voicemail(voicemail):
     # We use the DAO because this isn't available in confd yet
-    user_voicemail = user_voicemail_dao.find_by_voicemail_id(voicemail['id'])
+    user_voicemails = user_voicemail_dao.find_all_by_voicemail_id(voicemail['id'])
 
-    url = "{}/users/{}".format(URL, user_voicemail.user_id)
+    url = "{}/users/{}".format(URL, user_voicemails[0].user_id)
     response = session.get(url)
     return response.json()
 
