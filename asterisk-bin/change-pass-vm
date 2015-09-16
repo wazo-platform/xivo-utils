@@ -15,14 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+import os
 import sys
 
 from xivo_confd_client import Client
 
-client = Client("localhost", https=False, port=9487)
+DEFAULT_CONFD_CONFIG = {'host': 'localhost',
+                        'port': 9487,
+                        'https': 'False'}
 
+def get_confd_client_config():
+    host = os.environ.get('CONFD_HOST', DEFAULT_CONFD_CONFIG['host'])
+    port = int(os.environ.get('CONFD_PORT', DEFAULT_CONFD_CONFIG['port']))
+    https = os.environ.get('CONFD_HTTPS', DEFAULT_CONFD_CONFIG['https']).lower() == 'true'
+    username = os.environ.get('CONFD_USERNAME')
+    passwd = os.environ.get('CONFD_PASSWORD')
+    auth_method = os.environ.get('CONFD_AUTH_METHOD')
 
-def get_voicemail(number, context):
+    config = {'host': host,
+              'port': port,
+              'https': https}
+    if username:
+        config['username'] = username
+    if passwd:
+        config['password'] = passwd
+    if auth_method:
+        config['auth_method'] = auth_method
+
+    return config
+
+def get_voicemail(client, number, context):
     response = client.voicemails.list(search=number)
 
     found = [v for v in response['items']
@@ -33,7 +55,7 @@ def get_voicemail(number, context):
     return found[0]
 
 
-def update_password(voicemail, new_password):
+def update_password(client, voicemail, new_password):
     voicemail['password'] = new_password
     client.voicemails.update(voicemail)
 
@@ -46,5 +68,8 @@ if __name__ == "__main__":
     number = sys.argv[2]
     new_password = sys.argv[3]
 
-    voicemail = get_voicemail(number, context)
-    update_password(voicemail, new_password)
+    confd_client_config = get_confd_client_config()
+    client = Client(**confd_client_config)
+
+    voicemail = get_voicemail(client, number, context)
+    update_password(client, voicemail, new_password)
