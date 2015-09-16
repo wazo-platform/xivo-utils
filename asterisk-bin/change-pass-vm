@@ -16,71 +16,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import sys
-import requests
-import json
 
-from xivo_dao.resources.user_voicemail import dao as user_voicemail_dao
+from xivo_confd_client import Client
 
-URL = "http://localhost:9487/1.1"
-
-if len(sys.argv) != 4:
-    raise ValueError("Missing args!")
-
-session = requests.Session()
-session.headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/json'}
-
-context = sys.argv[1]
-mailbox = sys.argv[2]
-new_password = sys.argv[3]
+client = Client("localhost", https=False, port=9487)
 
 
-def get_voicemail(mailbox, context):
-    url = "{}/voicemails".format(URL)
-    response = session.get(url, params={'search': mailbox})
+def get_voicemail(number, context):
+    response = client.voicemails.list(search=number)
 
-    found = [v for v in response.json()['items']
-             if v['number'] == mailbox and v['context'] == context]
+    found = [v for v in response['items']
+             if v['number'] == number and v['context'] == context]
 
-    assert len(found) == 1, "voicemail {}@{} not found!".format(mailbox, context)
+    assert len(found) > 0, "voicemail {}@{} not found!".format(number, context)
+    assert len(found) == 1, "more than one voicemail found when searching for {}@{}".format(number, context)
     return found[0]
 
 
-def get_user_for_voicemail(voicemail):
-    # We use the DAO because this isn't available in confd yet
-    user_voicemails = user_voicemail_dao.find_all_by_voicemail_id(voicemail['id'])
-
-    url = "{}/users/{}".format(URL, user_voicemails[0].user_id)
-    response = session.get(url)
-    return response.json()
-
-
-def dissociate_voicemail(voicemail):
-    url = "{}/users/{}/voicemail".format(URL, user['id'])
-    response = session.delete(url)
-    assert response.status_code == 204, "error dissociating voicemail for user {}".format(user['id'])
-
-
 def update_password(voicemail, new_password):
-    url = "{}/voicemails/{}".format(URL, voicemail['id'])
-    body = json.dumps({'password': new_password})
-    response = session.put(url, data=body)
-    assert response.status_code == 204, "error updating password for voicemail {}".format(voicemail['id'])
+    voicemail['password'] = new_password
+    client.voicemails.update(voicemail)
 
 
-def associate_voicemail(user, voicemail):
-    url = "{}/users/{}/voicemail".format(URL, user['id'])
-    body = json.dumps({'voicemail_id': voicemail['id']})
-    response = session.post(url, data=body)
-    assert response.status_code == 201, "error associating user {} and voicemail {}".format(user['id'], voicemail['id'])
+if __name__ == "__main__":
+    if len(sys.argv) != 4:
+        raise ValueError("Missing args!")
 
+    context = sys.argv[1]
+    number = sys.argv[2]
+    new_password = sys.argv[3]
 
-# Currently, we need to dissociate the voicemail from the user before editing it.
-voicemail = get_voicemail(mailbox, context)
-user = get_user_for_voicemail(voicemail)
-dissociate_voicemail(user)
-
-update_password(voicemail, new_password)
-
-# Reassociate the user to the voicemail
-associate_voicemail(user, voicemail)
+    voicemail = get_voicemail(number, context)
+    update_password(voicemail, new_password)
