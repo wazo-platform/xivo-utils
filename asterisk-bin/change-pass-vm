@@ -30,7 +30,6 @@ def get_confd_client_config():
     https = os.environ.get('CONFD_HTTPS', DEFAULT_CONFD_CONFIG['https']).lower() == 'true'
     username = os.environ.get('CONFD_USERNAME')
     passwd = os.environ.get('CONFD_PASSWORD')
-    auth_method = os.environ.get('CONFD_AUTH_METHOD')
 
     config = {'host': host,
               'port': port,
@@ -39,8 +38,6 @@ def get_confd_client_config():
         config['username'] = username
     if passwd:
         config['password'] = passwd
-    if auth_method:
-        config['auth_method'] = auth_method
 
     return config
 
