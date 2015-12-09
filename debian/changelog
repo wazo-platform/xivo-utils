@@ -1,4 +1,4 @@
-xivo-utils (13.05~20130312.124101.6eedb0e-2) squeeze-xivo-skaro-dev; urgency=low
+xivo-utils (13.05~20130312.124101.6eedb0e) xivo-dev; urgency=low
 
   * add dependency to xivo-lib-python
 
