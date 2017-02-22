@@ -42,24 +42,12 @@ if [ "$force" = 0 ]; then
 	fi
 fi
 
-# We force the XIVO_UUID to be the same since it's simpler to keep it than
-# to update it.
-if [ -z "$XIVO_UUID" ]; then
-	echo "error: could not determine XIVO_UUID" >&2
-	exit 1
-fi
-
 cd /tmp
 trap on_reset_error ERR
 xivo-service stop
 
 echo 'Recreating postgresql database...'
 xivo-init-db --drop --init
-
-echo 'Updating XIVO_UUID in database...'
-sudo -u postgres psql asterisk <<EOF
-UPDATE infos SET uuid = '$XIVO_UUID';
-EOF
 
 echo 'Reconfiguring xivo-manage-db package...'
 dpkg-reconfigure xivo-manage-db
