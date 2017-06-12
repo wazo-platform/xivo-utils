@@ -44,7 +44,7 @@ fi
 
 cd /tmp
 trap on_reset_error ERR
-xivo-service stop
+wazo-service stop
 
 echo 'Recreating postgresql database...'
 xivo-init-db --drop --init
@@ -59,6 +59,6 @@ dpkg-reconfigure xivo-dird
 echo 'Cleaning up xivo-provd configs and devices...'
 rm -rf /var/lib/xivo-provd/jsondb/*
 trap ERR
-xivo-service start
+wazo-service start
 
 echo 'Wazo reset succesful.'
