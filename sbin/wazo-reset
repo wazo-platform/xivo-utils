@@ -55,6 +55,8 @@ echo 'Reconfiguring xivo-auth package...'
 dpkg-reconfigure xivo-auth
 echo 'Reconfiguring xivo-dird package...'
 dpkg-reconfigure xivo-dird
+echo 'Reconfiguring wazo-webhookd package...'
+dpkg-reconfigure wazo-webhookd
 
 echo 'Cleaning up xivo-provd configs and devices...'
 rm -rf /var/lib/xivo-provd/jsondb/*
