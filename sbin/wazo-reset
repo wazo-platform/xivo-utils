@@ -51,8 +51,8 @@ xivo-init-db --drop --init
 
 echo 'Reconfiguring xivo-manage-db package...'
 dpkg-reconfigure xivo-manage-db
-echo 'Reconfiguring xivo-auth package...'
-dpkg-reconfigure xivo-auth
+echo 'Reconfiguring wazo-auth package...'
+dpkg-reconfigure wazo-auth
 echo 'Reconfiguring xivo-dird package...'
 dpkg-reconfigure xivo-dird
 echo 'Reconfiguring wazo-webhookd package...'
