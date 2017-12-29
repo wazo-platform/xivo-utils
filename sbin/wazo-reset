@@ -58,6 +58,9 @@ dpkg-reconfigure xivo-dird
 echo 'Reconfiguring wazo-webhookd package...'
 dpkg-reconfigure wazo-webhookd
 
+echo 'Preparing wazo-auth to be bootstrapped...'
+wazo-auth-bootstrap setup
+
 echo 'Cleaning up xivo-provd configs and devices...'
 rm -rf /var/lib/xivo-provd/jsondb/*
 trap ERR
