@@ -50,13 +50,13 @@ echo 'Recreating postgresql database...'
 xivo-init-db --drop --init
 
 echo 'Reconfiguring xivo-manage-db package...'
-dpkg-reconfigure xivo-manage-db
+dpkg-reconfigure xivo-manage-db --frontend noninteractive
 echo 'Reconfiguring wazo-auth package...'
-dpkg-reconfigure wazo-auth
+dpkg-reconfigure wazo-auth --frontend noninteractive
 echo 'Reconfiguring wazo-dird package...'
-dpkg-reconfigure wazo-dird
+dpkg-reconfigure wazo-dird --frontend noninteractive
 echo 'Reconfiguring wazo-webhookd package...'
-dpkg-reconfigure wazo-webhookd
+dpkg-reconfigure wazo-webhookd --frontend noninteractive
 
 echo 'Preparing wazo-auth to be bootstrapped...'
 wazo-auth-bootstrap setup
