@@ -1,51 +1,58 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# Copyright 2006-2018 The Wazo Authors  (see the AUTHORS file)
+# SPDX-License-Identifier: GPL-3.0+
 
-# Copyright (C) 2006-2015 Avencall
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>
-
-import os
+import argparse
 import sys
+import yaml
 
-from xivo_confd_client import Client
+from xivo.chain_map import ChainMap
+from xivo.config_helper import parse_config_file
+from xivo_auth_client import Client as AuthClient
+from xivo_confd_client import Client as ConfdClient
 
-DEFAULT_CONFD_CONFIG = {'host': 'localhost',
-                        'port': 9487,
-                        'https': 'False'}
 
-def get_confd_client_config():
-    host = os.environ.get('CONFD_HOST', DEFAULT_CONFD_CONFIG['host'])
-    port = int(os.environ.get('CONFD_PORT', DEFAULT_CONFD_CONFIG['port']))
-    https = os.environ.get('CONFD_HTTPS', DEFAULT_CONFD_CONFIG['https']).lower() == 'true'
-    username = os.environ.get('CONFD_USERNAME')
-    passwd = os.environ.get('CONFD_PASSWORD')
+_DEFAULT_CERT_FILE = '/usr/share/xivo-certs/server.crt'
+_DEFAULT_CONFIG = {
+    'auth': {
+        'host': 'localhost',
+        'port': 9497,
+        'key_file': '/var/lib/xivo-auth-keys/change_vm_pass-key.yml',
+        'verify_certificate': _DEFAULT_CERT_FILE,
+        'backend': 'xivo_service',
+    },
+    'confd': {
+        'host': 'localhost',
+        'port': 9486,
+        'verify_certificate': _DEFAULT_CERT_FILE,
+    },
+}
 
-    config = {'host': host,
-              'port': port,
-              'https': https}
-    if username:
-        config['username'] = username
-    if passwd:
-        config['password'] = passwd
 
-    return config
+def _load_config(cli_config):
+    config_filename = cli_config.get('config_file')
+    file_config = parse_config_file(config_filename) if config_filename else {}
+    service_key = _load_key_file(ChainMap(cli_config, file_config, _DEFAULT_CONFIG))
+    return ChainMap(cli_config, service_key, file_config, _DEFAULT_CONFIG)
+
+
+def _load_key_file(config):
+    key_file = parse_config_file(config['auth']['key_file'])
+    return {
+        'auth': {
+            'username': key_file['service_id'],
+            'password': key_file['service_key'],
+        },
+    }
+
 
 def get_voicemail(client, number, context):
-    response = client.voicemails.list(search=number)
+    response = client.voicemails.list(search=number, recurse=True)
 
-    found = [v for v in response['items']
-             if v['number'] == number and v['context'] == context]
+    def matches(vm):
+        return vm['number'] == number and vm['context'] == context
+
+    found = [v for v in response['items'] if matches(v)]
 
     assert len(found) > 0, "voicemail {}@{} not found!".format(number, context)
     assert len(found) == 1, "more than one voicemail found when searching for {}@{}".format(number, context)
@@ -57,16 +64,56 @@ def update_password(client, voicemail, new_password):
     client.voicemails.update(voicemail)
 
 
+def _parse_cli_args(args):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config-file', help='The path to the config file')
+    parser.add_argument('--dump-config', action='store_true',
+                        help='Prints the current configuration')
+    parser.add_argument('context', help='The voicemail context')
+    parser.add_argument('number', help='The voicemail number')
+    parser.add_argument('password', help='The new password')
+    parsed_args = parser.parse_args()
+
+    cli_config = {}
+    if parsed_args.config_file:
+        cli_config['config_file'] = parsed_args.config_file
+    if parsed_args.dump_config:
+        cli_config['dump_config'] = parsed_args.dump_config
+
+    context = parsed_args.context or None
+    number = parsed_args.number or None
+    password = parsed_args.password or None
+
+    return context, number, password, cli_config
+
+
+def _dump_config(config):
+    conf = dict(config)
+    conf['auth'].pop('username', None)
+    conf['auth'].pop('password', None)
+    conf.pop('dump_config', None)
+    conf.pop('config_file', None)
+    print(yaml.dump(conf))
+
+
+def _change_password(config, context, number, password):
+    auth = AuthClient(**config['auth'])
+    token = auth.token.new(config['auth']['backend'], expiration=60)['token']
+
+    confd = ConfdClient(token=token, **config['confd'])
+    voicemail = get_voicemail(confd, number, context)
+    update_password(confd, voicemail, password)
+
+
+def main(args):
+    context, number, password, cli_config = _parse_cli_args(args)
+    config = _load_config(cli_config)
+
+    if config.get('dump_config'):
+        _dump_config(config)
+    else:
+        _change_password(config, context, number, password)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        raise ValueError("Missing args!")
-
-    context = sys.argv[1]
-    number = sys.argv[2]
-    new_password = sys.argv[3]
-
-    confd_client_config = get_confd_client_config()
-    client = Client(**confd_client_config)
-
-    voicemail = get_voicemail(client, number, context)
-    update_password(client, voicemail, new_password)
+    main(sys.argv)
