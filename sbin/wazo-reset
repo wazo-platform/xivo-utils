@@ -86,6 +86,6 @@ echo 'Cleaning up xivo-provd configs and devices...'
 rm -rf /var/lib/xivo-provd/jsondb/*
 
 trap ERR
-wazo-service start
+wazo-service restart
 
 echo 'Wazo reset succesful.'
