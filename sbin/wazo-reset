@@ -22,6 +22,19 @@ EOF
 	exit 1
 }
 
+wait_until_wazo_auth_ready(){
+    WAIT_TIMEOUT=60
+    WAIT_INTERVAL=1
+    while ! ss --listening --tcp '( sport = :9497 )' | grep -q LISTEN; do
+        sleep ${WAIT_INTERVAL}
+        WAIT_TIMEOUT=$((WAIT_TIMEOUT - WAIT_INTERVAL))
+        if [ "$WAIT_TIMEOUT" -eq 0 ]; then
+            echo "wazo-auth is not ready"
+            return 1
+        fi
+    done
+}
+
 while getopts ':f' opt; do
 	case "$opt" in
 		f)
@@ -49,6 +62,9 @@ wazo-service stop
 echo 'Recreating postgresql database...'
 xivo-init-db --drop --init
 
+echo 'Cleaning up wazo-auth-cli configs...'
+rm -rf /root/.config/wazo-auth-cli
+
 echo 'Reconfiguring xivo-manage-db package...'
 dpkg-reconfigure xivo-manage-db --frontend noninteractive
 echo 'Reconfiguring wazo-auth package...'
@@ -61,8 +77,14 @@ dpkg-reconfigure wazo-webhookd --frontend noninteractive
 echo 'Preparing wazo-auth to be bootstrapped...'
 wazo-auth-bootstrap setup
 
+echo 'Recreating internal services access...'
+systemctl start wazo-auth
+wait_until_wazo_auth_ready
+wazo-auth-keys service update --recreate
+
 echo 'Cleaning up xivo-provd configs and devices...'
 rm -rf /var/lib/xivo-provd/jsondb/*
+
 trap ERR
 wazo-service start
 
