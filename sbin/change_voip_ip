@@ -1,0 +1,30 @@
+#!/bin/sh
+
+# Copyright 2019 The Wazo Authors  (see the AUTHORS file)
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+set -x
+
+
+usage() {
+    cat >&2 <<EOF
+Usage: $0 <new IP address> <new gateway>
+Change the VOIP ip address of the engine
+EOF
+	exit 1
+}
+
+if [ "$#" -ne 2 ]; then
+   usage
+fi
+
+IP="${1}"
+GATEWAY="${2}"
+
+query="UPDATE netiface SET address='${IP}', gateway='${GATEWAY}' WHERE networktype='voip'"
+sudo -u postgres psql asterisk -c "${query}"
+
+xivo-create-config
+xivo-update-config
+
+echo 'Restart all services for changes to take effect'
