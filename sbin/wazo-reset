@@ -75,7 +75,6 @@ echo 'Reconfiguring wazo-webhookd package...'
 dpkg-reconfigure wazo-webhookd --frontend noninteractive
 
 echo 'Recreating internal services access...'
-systemctl start wazo-auth
 wait_until_wazo_auth_ready
 wazo-auth-keys service update --recreate
 
