@@ -83,5 +83,6 @@ rm -rf /var/lib/xivo-provd/jsondb/*
 
 trap ERR
 wazo-service restart
+systemctl start wazo-setupd
 
 echo 'Wazo reset successful.'
