@@ -85,4 +85,4 @@ rm -rf /var/lib/xivo-provd/jsondb/*
 trap ERR
 wazo-service restart
 
-echo 'Wazo reset succesful.'
+echo 'Wazo reset successful.'
