@@ -69,6 +69,8 @@ echo 'Reconfiguring xivo-manage-db package...'
 dpkg-reconfigure xivo-manage-db --frontend noninteractive
 echo 'Reconfiguring wazo-auth package...'
 dpkg-reconfigure wazo-auth --frontend noninteractive
+echo 'Reconfiguring wazo-chatd package...'
+dpkg-reconfigure wazo-chatd --frontend noninteractive
 echo 'Reconfiguring wazo-dird package...'
 dpkg-reconfigure wazo-dird --frontend noninteractive
 echo 'Reconfiguring wazo-webhookd package...'
