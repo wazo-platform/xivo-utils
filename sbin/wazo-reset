@@ -83,6 +83,9 @@ wazo-auth-keys service update --recreate
 echo 'Cleaning up wazo-provd configs and devices...'
 rm -rf /var/lib/wazo-provd/jsondb/*
 
+echo 'Restoring removed packages...'
+apt-get install -y wazo-nestbox-plugin wazo-deployd-client
+
 trap ERR
 wazo-service restart
 systemctl start wazo-setupd
