@@ -1,13 +1,13 @@
 Source: xivo-utils
 Section: utils
-Priority: extra
+Priority: optional
 Maintainer: Wazo Maintainers <dev@wazo.community>
 Build-Depends: cdbs (>= 0.4.23-1.1), debhelper (>= 9)
 Standards-Version: 3.9.6
 
 Package: xivo-utils
 Architecture: all
-Depends: ghostscript-x
+Depends: ghostscript-x, python
 Description: miscellaneous utilities for Wazo
  These are Asterisk unrelated utils needed for the Wazo solution.
  .
