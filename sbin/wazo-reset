@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# Copyright 2017-2021 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 force=0
@@ -84,9 +84,6 @@ wazo-auth-keys service update --recreate
 
 echo 'Cleaning up wazo-provd configs and devices...'
 rm -rf /var/lib/wazo-provd/jsondb/*
-
-echo 'Restoring removed packages...'
-apt-get install -y wazo-nestbox-plugin wazo-deployd-client
 
 trap ERR
 wazo-service restart
