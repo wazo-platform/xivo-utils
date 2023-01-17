@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 # Copyright 2013-2023 The Wazo Authors  (see the AUTHORS file)
 #
@@ -83,7 +82,7 @@ GETOPT_LONGOPTS = [
 ]
 try:
     opts = getopt.gnu_getopt(sys.argv[1:], GETOPT_SHORTOPTS, GETOPT_LONGOPTS)
-except getopt.GetoptError as exc:
+except getopt.GetoptError:
     opts = ([], [])
 
 for opt, arg in opts[0]:
