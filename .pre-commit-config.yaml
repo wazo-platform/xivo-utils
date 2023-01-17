@@ -38,4 +38,4 @@ repos:
   hooks:
   - id: mypy
     language_version: "3.10"
-    additional_dependencies: ["types-mock", "types-pytz", "types-requests", "types-pyyaml", "types-setuptools"]
+    additional_dependencies: ["types-pytz", "types-setuptools", "types-ujson"]

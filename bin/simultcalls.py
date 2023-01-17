@@ -15,17 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+from __future__ import annotations
+
 __version__ = "$Revision$"
 __date__ = "$Date$"
 __author__ = "Corentin Le Gall"
 
-import cjson
+import ujson
 import csv
 import getopt
 import os
 import sys
 import time
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
+
+
+class json:
+    decode = staticmethod(ujson.loads)
+    encode = staticmethod(ujson.dumps)
+
+
+histo_seconds: dict[int, float] = {}
+histo_minutes: dict[int, float] = {}
 
 
 def zero_seconds(val):
@@ -161,7 +174,7 @@ if sc_mode == "ip":
     )
     wr = w.readlines()
     if wr:
-        for z in cjson.decode("".join(wr)):
+        for z in json.decode("".join(wr)):
             nl += 1
             start = z.get("calldate")
             length = z.get("duration")
@@ -216,8 +229,8 @@ if not mystats:
 
 starttime_seconds = mystats[0][0]
 starttime_minutes = mystats[0][0] / 60
-histo_seconds: dict[int, int] = {}
-histo_minutes: dict[int, int] = {}
+histo_seconds = {}
+histo_minutes = {}
 
 # fill the seconds' bins
 for st in mystats:
@@ -243,7 +256,7 @@ datfile_s = open(datfilename_s, "w")
 datfile_m = open(datfilename_m, "w")
 
 # fill the minutes' bins and keep data around the maximal values
-max_s_value = 0
+max_s_value = 0.0
 max_s_list = []
 hsk = list(histo_seconds.keys())
 hsk.sort()
