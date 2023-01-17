@@ -35,7 +35,6 @@
 __version__ = "$Revision$ $Date$"
 
 import datetime
-import itertools
 import logging
 import re
 import string
@@ -415,7 +414,7 @@ def _parse_tz_source_file(lines):
     - a list of ZoneLine object
     - a list of LinkLine object
     """
-    rulesets = {}
+    rulesets: dict[str, RuleSet] = {}
     zones = []
     links = []
 
