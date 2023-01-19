@@ -1,5 +1,4 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 # Copyright 2010-2023 The Wazo Authors  (see the AUTHORS file)
 #
