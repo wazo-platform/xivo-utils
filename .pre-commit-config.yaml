@@ -1,0 +1,6 @@
+# See https://pre-commit.com for more information
+repos:
+- repo: https://github.com/wazo-platform/wazo-tools
+  rev: master
+  hooks:
+  - id: wazo-copyright-check

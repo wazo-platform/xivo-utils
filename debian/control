@@ -7,7 +7,7 @@ Standards-Version: 3.9.6
 
 Package: xivo-utils
 Architecture: all
-Depends: ghostscript-x, python
+Depends: ghostscript-x
 Description: miscellaneous utilities for Wazo
  These are Asterisk unrelated utils needed for the Wazo solution.
  .
