@@ -28,4 +28,3 @@ if [ -n "${CHANNELS_TO_PUNISH}" ]; then
   fi
   logger -t "${SUBJECT}" "$(echo -e "${MSG}" | tr "\n" " ")"
 fi
-
