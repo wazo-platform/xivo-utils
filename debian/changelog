@@ -12,7 +12,7 @@ xivo-utils (13.05~20130312.124101.6eedb0e) xivo-dev; urgency=low
 
 xivo-utils (13.04~20130205.210209.241fc8f-1) squeeze-xivo-skaro-dev; urgency=low
 
-  * rename package 
+  * rename package
 
  -- Nicolas HICHER <nhicher@avencall.com>  Tue, 12 Mar 2013 08:50:04 -0400
 
