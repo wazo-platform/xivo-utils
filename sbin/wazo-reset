@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2024 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 force=0
@@ -75,15 +75,14 @@ echo 'Reconfiguring wazo-chatd package...'
 dpkg-reconfigure wazo-chatd --frontend noninteractive
 echo 'Reconfiguring wazo-dird package...'
 dpkg-reconfigure wazo-dird --frontend noninteractive
+echo 'Reconfiguring wazo-provd package...'
+dpkg-reconfigure wazo-provd --frontend noninteractive
 echo 'Reconfiguring wazo-webhookd package...'
 dpkg-reconfigure wazo-webhookd --frontend noninteractive
 
 echo 'Recreating internal services access...'
 wait_until_wazo_auth_ready
 wazo-auth-keys service update --recreate
-
-echo 'Cleaning up wazo-provd configs and devices...'
-rm -rf /var/lib/wazo-provd/jsondb/*
 
 trap ERR
 wazo-service restart
