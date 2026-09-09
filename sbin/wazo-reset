@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-# Copyright 2017-2022 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2017-2026 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 force=0
@@ -12,14 +12,14 @@ Reset Wazo database and files.
 
   -f    do not prompt before resetting
 EOF
-	exit 1
+    exit 1
 }
 
 on_reset_error() {
-	cat >&2 <<EOF
+    cat >&2 <<EOF
 An error occurred during the reset. Aborting.
 EOF
-	exit 1
+    exit 1
 }
 
 wait_until_wazo_auth_ready(){
@@ -36,23 +36,23 @@ wait_until_wazo_auth_ready(){
 }
 
 while getopts ':f' opt; do
-	case "$opt" in
-		f)
-			force=1
-			;;
-		*)
-			usage
-			;;
-	esac
+    case "$opt" in
+        f)
+            force=1
+            ;;
+        *)
+            usage
+            ;;
+    esac
 done
 
 echo 'WARNING: This will erase all Wazo data and restart the Wazo services.'
 
 if [ "$force" = 0 ]; then
-	read -p 'Are you sure you want to reset Wazo [y/N]? ' answer
-	if [ "$answer" != y -a "$answer" != Y ]; then
-		exit 0
-	fi
+    read -p 'Are you sure you want to reset Wazo [y/N]? ' answer
+    if [ "$answer" != y -a "$answer" != Y ]; then
+        exit 0
+    fi
 fi
 
 cd /tmp
